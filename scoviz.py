@@ -100,6 +100,34 @@ def getselmem(obj,pred=None):
 
 
 # In[ ]:
+import os
+import networkx as nx
+path = '/usr/local/lib/python3.6/dist-packages/sklearn/'
+base_name = '/usr/local/lib/python3.6/dist-packages'
+G1 = nx.DiGraph()
+root = os.path.basename(path)
+G1.add_node(root)
+for dirpath, dirname, filenames in os.walk(path):
+    #print(dirpath)
+    if os.path.basename(dirpath) == '__pycache__':
+        continue
+    if '__pycache__' in dirname:
+        dirname.remove('__pycache__')
+    for dirs in dirname:
+        G1.add_node(dirs)
+        G1.add_edge(root, dirs, weight=1)
+    t = baseroot(base_name, dirpath)
+#     print(t)
+    import_str = '.'.join([x for x in t if x != ''])
+    print(import_str)
+    for file in filenames:
+        file = removeext(file, '.')
+        G1.add_node(file)
+        if len(import_str) != 0:
+          exec('import '+ import_str)
+        G1.add_edge(root, file, weight=0.5)
+        
+    root = os.path.basename(dirpath)
 
 
 def main(allfiles):
