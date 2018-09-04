@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[ ]:
+# In[2]:
 
 
 import inspect as ins
@@ -9,19 +9,58 @@ import sklearn as sk
 import os
 import glob
 from os import walk
+from networkx.readwrite import json_graph
 
 
-# In[ ]:
+# In[3]:
+
+
+class node:
+    def __init__(self,name):
+        self.name = name
+        self.children=[]
+        self.parent=[]
+
+
+# In[4]:
+
+
+def nodeparent(parent,children):
+    parent.children.append(children)
+    children.parent.append(parent)
+
+
+# In[5]:
+
+
+def ifchildren(parent,children):
+    if parent in children.parent:
+        return True
+    else:
+        return False
+
+
+# In[6]:
+
+
+def ifparent(parent,children):
+    if children in parent.children:
+        return True
+    else:
+        return False
+
+
+# In[7]:
 
 
 def basedir(filepath):
-    li=filepath.split('/')
+    li=filepath.split('\\')
     del li[-1]
-    bdir='/'.join(li)
+    bdir='\\'.join(li)
     return bdir
 
 
-# In[ ]:
+# In[8]:
 
 
 def allrecfiles(dirpath,extfile=None):
@@ -37,7 +76,7 @@ def allrecfiles(dirpath,extfile=None):
     return filenames
 
 
-# In[ ]:
+# In[9]:
 
 
 def removeext(filename,extfile=None):
@@ -45,47 +84,47 @@ def removeext(filename,extfile=None):
     return li[0]
 
 
-# In[ ]:
+# In[10]:
 
 
 def bottompath(filename):
-    li=filename.split('/')
+    li=filename.split('\\')
     if li[-1] == '':
         return li[-2]
     else:
         return li[-1]
 
 
-# In[ ]:
+# In[11]:
 
 
 def dirdepth(dirpath):
-    li=dirpath.split('/')
+    li=dirpath.split('\\')
     if li[-1] == '':
         return len(li) - 1
     else:
         return len(li)
 
 
-# In[ ]:
+# In[12]:
 
 
 def baseroot(dirpath,dirpath1):
     dep=dirdepth(dirpath)
-    arr=dirpath1.split('/')
+    arr=dirpath1.split('\\')
     new_arr=[]
     for i in range(dep,len(arr)):
         new_arr.append(arr[i])
     return new_arr
 
 
-# In[11]:
+# In[13]:
 
 
-baseroot('/usr/local/lib/python3.6/dist-packages/','/usr/local/lib/python3.6/dist-packages/sklearn/multioutput')
+baseroot('F:\\Anaconda\\Lib\\site-packages\\sklearn','F:\\Anaconda\\Lib\\site-packages\\sklearn\\multioutput')
 
 
-# In[ ]:
+# In[14]:
 
 
 def getselmem(obj,pred=None):
@@ -99,14 +138,14 @@ def getselmem(obj,pred=None):
     return final_list
 
 
-# In[ ]:
+# In[15]:
 
 
 def main(allfiles):
     di={}
     for i in allfiles:
         i=removeext(i,'.py')
-        li=baseroot('/usr/local/lib/python3.6/dist-packages/',i)
+        li=baseroot('F:\\Anaconda\\Lib\\site-packages',i)
         importstr=('.').join(li)
         str1= 'import ' + importstr 
         str2='di[\'' + importstr + '\']=getselmem(' + importstr +  ',[ins.isfunction,ins.ismethod,ins.isclass])'
@@ -118,33 +157,54 @@ def main(allfiles):
     return di
 
 
+# In[16]:
+
+
+allfiles=allrecfiles('F:\\Anaconda\\Lib\\site-packages\\sklearn\\','.py')
+# allrecfiles('F:\\Anaconda\\Lib\\site-packages\\sklearn\\','.py')
+
+
+# In[19]:
+
+
+# t=main(allfiles)
+# print(t)
+for i in t:
+    print(i)
+
+
+# In[49]:
+
+
+for i in t.keys():
+    x=i.split('.')
+    if x[0] not in di['start']:
+        dii={}
+        dii[str(x[0])]=[]
+        di['start'].append(dii)
+    break
+#     if x[1] not in di['start'][str(x[0])]:
+#         di['start'][x[0]].append(str(x[1]))        
+
+
+# In[53]:
+
+
+def walk(node):
+    """ iterate tree in pre-order depth-first search order """
+    yield node
+    for child in node.children:
+        for n in walk(child):
+            yield n
+
+
+# In[54]:
+
+
+
+
+
 # In[ ]:
-
-
-allfiles=allrecfiles('/usr/local/lib/python3.6/dist-packages/sklearn/','.py')
-
-
-# In[15]:
-
-
-t=main(allfiles)
-print(t)
-
-
-# In[ ]:
-
-
-class node:
-    def __init__(self, key, name=None):
-        self.key = key
-        self.name = ('Dummy_node' if not name else name)
-        
-    def __str__(self):
-        return self.key
-        
-
-
-# In[17]:
 
 
 import networkx as nx
@@ -157,18 +217,17 @@ for i in t.keys():
     j=t[i]
     for k in j:
         G.add_node(ins.getmodule(k[1]).__name__ + '.' + k[0])
-        print(f"node_name={ k[0]}, and type={type(ins.getmodule(k[1]).__name__ + '.' + k[0])}")
         if i == ins.getmodule(k[1]).__name__ :
-            G.add_edge(i,ins.getmodule(k[1]).__name__ + '.' + k[0], weight=1)
+            G.add_edge(i,ins.getmodule(k[1]).__name__ + '.' + k[0])
         else:
-            G.add_edge(ins.getmodule(k[1]).__name__ + '.' + k[0],i, weight=1)
+            G.add_edge(ins.getmodule(k[1]).__name__ + '.' + k[0],i)
     #G = nx.relabel.convert_node_labels_to_integers(G)
 
 
 # In[ ]:
 
 
-import matplotlib.pyplot as plt
+json_graph.node_link_data(G)
 
 
 # In[ ]:
@@ -184,49 +243,74 @@ def sub_graph(node,G):
     return G.subgraph(li)
 
 
-# In[22]:
+# In[ ]:
 
 
-#plt.subplot(121)
-# nx.draw_shell(sub_graph('sklearn.cross_decomposition.pls_',G), with_labels=True, font_weight='bold')
-nx.node_link_data(sub_graph('sklearn.cross_decomposition.pls_',G))
+Gsub=sub_graph('sklearn.naive_bayes',G)
 
 
 # In[ ]:
 
 
-# !pip install nxviz
+H = nx.DiGraph()
+H = Gsub.copy()   
+
+
+# In[ ]:
+
+
+for n in Gsub:
+    arr = n.split('.')
+    for i in range(len(arr)-1):
+        H.add_node(arr[i])
+    for i in range(len(arr)-1):
+        if i != len(arr) - 2:
+            H.add_edge(arr[i],arr[i+1])
+        else:
+            H.add_edge(arr[i],n)
+
+
+# In[ ]:
+
+
+for n in H:
+    print(n)
+    H.nodes[n]['name'] = n.split('.')[-1]
+    print(H.nodes[n]['name'])
 
 
 # In[ ]:
 
 
 # type(nx.node_link_data(sub_graph('sklearn.cross_decomposition.pls_',G)))
-import json
-# json.dump(nx.node_link_data(sub_graph('sklearn.cross_decomposition.pls_',G)))
-Gsub=sub_graph('sklearn.cross_decomposition.pls_',G)
-for n in Gsub:
-    Gsub.nodes[n]['name'] = n
-from networkx.readwrite import json_graph
-d = json_graph.node_link_data(Gsub)
+# import json
+# # json.dump(nx.node_link_data(sub_graph('sklearn.cross_decomposition.pls_',G)))
+# # Gsub=sub_graph('sklearn.cross_decomposition.pls_',G)
+# # for n in Gsub:
+# #     Gsub.nodes[n]['name'] = n
+# from networkx.readwrite import json_graph
+for h in H:
+    print(H.nodes[h]['name'])
 
 
 # In[ ]:
 
 
-from networkx import convert_node_labels_to_integers
-Gsub=sub_graph('sklearn.cross_decomposition.pls_',G)
-Glab=convert_node_labels_to_integers(Gsub)
+# from networkx import convert_node_labels_to_integers
+# Gsub=sub_graph('sklearn.cross_decomposition.pls_',G)
+Glab=convert_node_labels_to_integers(H)
+for i in Glab:
+    print(i)
 
 
 # In[ ]:
 
 
-from networkx.readwrite import json_graph
-d = json_graph.node_link_data(Glab)
+# from networkx.readwrite import json_graph
+d=json_graph.node_link_data(Glab)
 
 
-# In[36]:
+# In[ ]:
 
 
 d
@@ -236,35 +320,13 @@ d
 
 
 json.dump(d, open('force.json', 'w'))
-# !ls
-from google.colab import files
-files.download('force.json')
-
-
-# In[22]:
-
-
-# list(G.predecessors('sklearn.cross_decomposition.pls_'))
-s = sub_graph('sklearn.cross_decomposition.pls_',G)
-pos = nx.drawing.spring_layout(s, scale=3300)
-print(pos)
-# print(G.nodes())
-# plt.subplot(111)
-# nx.draw(s,pos, with_labels=True,node_size = 15, node_color='#A0CBE2')
-plt.subplot(122)
-nx.draw_shell(s,with_labels=True, alpha=0.8, font_size=7)
-plt.show()
+# from google.colab import files
+# files.download('force.json')
 
 
 # # New Section
 
-# In[23]:
-
-
-get_ipython().system('pip install bokeh')
-
-
-# In[26]:
+# In[ ]:
 
 
 from bokeh.io import show, output_notebook

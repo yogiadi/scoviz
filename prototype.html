@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+.node {
+  cursor: pointer;
+}
+
+.node circle {
+  fill: #fff;
+  stroke: steelblue;
+  stroke-width: 1.5px;
+}
+
+.node text {
+  font: 10px sans-serif;
+}
+
+.link {
+  fill: none;
+  stroke: #ccc;
+  stroke-width: 1.5px;
+}
+
+</style>
+<body>
+<script src="//d3js.org/d3.v3.min.js"></script>
+<svg width="960" height="800" >
+  <g transform="translate(120,20)">
+    <g class="node" transform="translate(0,200)">
+      <circle r="4.5" style="fill: rgb(255,255,255);"></circle>
+      <text x="-10" dy=".35em" text-anchor="end" style="fill-opacity:1;">sklearn</text>
+    </g>
+    <g class="node" transform="translate(20,0)">
+      <circle r="4.5" style="fill: rgb(255,255,255);"></circle>
+      <text x="-10" dy=".35em" text-anchor="end" style="fill-opacity:1;">svm</text>
+    </g>
+  </g>
+</svg>
+</body>
+</html>
